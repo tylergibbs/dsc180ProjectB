@@ -49,7 +49,7 @@ class GolemTS(nn.Module):
         # Placeholders and variables
         self.lr = 1e-2
         self.X = torch.zeros([self.n, self.d], dtype=torch.float32)
-        self.Y = torch.zeros([self.n, (self.p + 1) * self.d])
+        # self.Y = torch.zeros([self.n, (self.p + 1) * self.d])
         self.Y = torch.tensor(Y, dtype=torch.float32)
         self.A = nn.Parameter(torch.zeros([self.d * (self.p + 1), self.d], dtype=torch.float32))
         if self.A_init is not None:
