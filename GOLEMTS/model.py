@@ -47,7 +47,7 @@ class GolemTS(nn.Module):
         self.U = torch.vstack([torch.eye(d), torch.zeros((p * d, d))])
 
         # Placeholders and variables
-        self.lr = 1e-3
+        self.lr = 1e-2
         self.X = torch.zeros([self.n, self.d], dtype=torch.float32)
         self.Y = torch.zeros([self.n, (self.p + 1) * self.d])
         self.Y = torch.tensor(Y, dtype=torch.float32)

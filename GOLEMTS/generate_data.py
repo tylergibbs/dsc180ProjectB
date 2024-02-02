@@ -53,8 +53,8 @@ class SyntheticDataset:
            self.A_ranges = []
            for i in range(self.p):
                A_s = (1 / (n**(i)))
-               self.A_ranges.append(((A_s * -2.0, A_s * -0.5),
-                         (A_s * 0.5, A_s * 2.0)))
+               self.A_ranges.append(((A_s * -0.3, A_s * -0.5),
+                         (A_s * 0.3, A_s * 0.5)))
 
            
            self.rs = np.random.RandomState(seed)    # Reproducibility
