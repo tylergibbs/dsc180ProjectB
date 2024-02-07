@@ -19,7 +19,7 @@ class GolemTS(nn.Module):
     _logger = logging.getLogger(__name__)
 
     def __init__(self, n, d, p, Y, lambda_1, lambda_2,
-                 seed=1, A_init=None):
+                 seed=1, A_init=None, ev=False):
         """Initialize self.
 
         Args:
@@ -37,6 +37,7 @@ class GolemTS(nn.Module):
         super(GolemTS, self).__init__()
 
         self.n = n
+        self.ev = ev
         self.d = d
         self.p = p # autoregressive order
         self.seed = seed
@@ -47,7 +48,7 @@ class GolemTS(nn.Module):
         self.U = torch.vstack([torch.eye(d), torch.zeros((p * d, d))])
 
         # Placeholders and variables
-        self.lr = 1e-2
+        self.lr = 1e-3
         self.X = torch.zeros([self.n, self.d], dtype=torch.float32)
         # self.Y = torch.zeros([self.n, (self.p + 1) * self.d])
         self.Y = torch.tensor(Y, dtype=torch.float32)
@@ -69,7 +70,7 @@ class GolemTS(nn.Module):
         self._logger.debug("Finished building PYTORCH graph.")
     
     def get_W(self):
-        return self.A[:self.d].T
+        return self.A[:self.d]
 
     def set_learning_rate(self, lr):
         self.lr = lr
@@ -101,14 +102,22 @@ class GolemTS(nn.Module):
         Returns:
             tf.Tensor: Likelihood term (scalar-valued).
         """
+        I = torch.eye((self.p + 1) * self.d)
+        ep = 1e-5
         Binv = self.U - self.A
         B = torch.pinverse(Binv)
         # print(self.A)
         # print(Binv)
         # print(self.Y @ Binv)
         omega = torch.diag(torch.diag((self.Y @ Binv).T @ (self.Y @ Binv))) / self.n
+        if self.ev:
+            with torch.no_grad():
+                print(torch.logdet(B.T @ B + ep * I) / self.n)
+            return (0.5 * torch.log(torch.trace(omega) / self.d)) # + 0.5 * (1/ self.n) * torch.logdet(B.T @ B + ep * I)
+        else:
         # print((self.Y @ Binv).T @ (self.Y @ Binv))
-        return 0.5 * torch.logdet(B.T @ omega @ B)
+            return 0.5 * torch.logdet(B.T @ omega @ B + ep * I)
+
 
     def _compute_L1_penalty(self):
         """Compute L1 penalty.

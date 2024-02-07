@@ -42,6 +42,7 @@ class SyntheticDataset:
             seed (int): Random seed. Default: 1.
         """
         if isinstance(n, int):
+           self.noise = noise_type
            self.n = n
            self.d = d
            self.p = p
@@ -52,7 +53,7 @@ class SyntheticDataset:
                          (B_scale * 0.5, B_scale * 2.0))
            self.A_ranges = []
            for i in range(self.p):
-               A_s = (1 / (n**(i)))
+               A_s = (1 / (A_scale**(i)))
                self.A_ranges.append(((A_s * -0.3, A_s * -0.5),
                          (A_s * 0.3, A_s * 0.5)))
 
@@ -82,19 +83,40 @@ class SyntheticDataset:
                                                          self.graph_type, self.rs)
         self.B = SyntheticDataset.simulate_weight(self.B_bin, self.B_ranges, self.rs)
         self.A = np.vstack([self.B.T, np.vstack(A_list)])
-        self.Z, self.Y = SyntheticDataset.simulate_ts(self.A, self.n)
+        self.Z, self.Y = SyntheticDataset.simulate_ts(self.A, self.n, self.noise_type)
         self.X = self.Y[:, :self.d]
         assert is_dag(self.B)
 
 
     @staticmethod
-    def simulate_ts(A, n):
+    def simulate_ts(A, n, noise_type):
+
+
         # generate noize vector Z (d x d)
         d = A.shape[1]
         p  = int(A.shape[0] / A.shape[1]) - 1
-        Z = np.random.multivariate_normal(np.zeros(d), np.diag(np.random.uniform(1, 2, (d))), size=(n))
-        U = np.vstack([np.eye(d), np.zeros((d*p, d))])
-        Y = Z @ np.linalg.pinv(U - A)
+        Z = None
+        if noise_type == 'EV':
+            Z = np.random.multivariate_normal(np.zeros(A.shape[0]), np.random.uniform(1.0, 2.0) * np.eye(A.shape[0]), size=(n))
+        else:
+            Z = np.random.multivariate_normal(np.zeros(A.shape[0]), np.diag(np.random.uniform(1.0, 2.0, (A.shape[0]))), size=(n))
+        # create Adag
+        Adag = np.hstack([A, np.zeros(((p+ 1) * d, p * d))])
+        Y = np.zeros([n, (p+ 1) * d])
+        G = nx.DiGraph(Adag)
+        ordered_vertices = list(nx.topological_sort(G))
+        assert len(ordered_vertices) == (p+1) * d
+        for i in ordered_vertices:
+            parents = list(G.predecessors(i))
+            Y[:, i] = Y[:, parents] @ Adag[parents, i] + Z[:, i]
+        return Z, Y
+
+
+        
+
+
+        # U = np.vstack([np.eye(d), np.zeros((d*p, d))])
+        # Y = Z @ np.linalg.pinv(U - A)
         return Z, Y 
 
     @staticmethod
