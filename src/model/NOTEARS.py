@@ -24,7 +24,7 @@ class NOTEARS(Model):
           X_A = torch.stack([torch.tensordot(A, X[i:i+self.w], dims=((0,1),(0,1)))
                     for i in range(1, X.size()[0]-self.w+1)])
 
-          likelyhood = torch.square(torch.norm(X_NOW - X_W - X_A, "fro"))/np.prod(X.size())
+          likelyhood = torch.square(torch.norm(X_NOW - X_W - X_A, "fro"))/X.size()[2]
           sparcityW = torch.norm(W, 1) 
           sparcityA = torch.norm(A, 1)
 

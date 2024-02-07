@@ -189,7 +189,8 @@ class WAgraph:
 
       def generateA_B(self, edges, graph_type, node_dist="fixed", method="ER"):
         nodes = self.getEdgeNum(edges, node_dist)
-
+        
+        #TODO generate if no window
         if method == "ER":
            grf_B = np.zeros((self.w, self.v, self.v))
            for i in range(nodes):
