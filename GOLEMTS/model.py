@@ -113,7 +113,7 @@ class GolemTS(nn.Module):
         if self.ev:
             with torch.no_grad():
                 print(torch.logdet(B.T @ B + ep * I) / self.n)
-            return (0.5 * torch.log(torch.trace(omega) / self.d)) # + 0.5 * (1/ self.n) * torch.logdet(B.T @ B + ep * I)
+            return (0.5 * torch.log(torch.trace(omega) / self.d))  + 0.5 * (1/ self.n) * torch.logdet(B.T @ B + ep * I)
         else:
         # print((self.Y @ Binv).T @ (self.Y @ Binv))
             return 0.5 * torch.logdet(B.T @ omega @ B + ep * I)
