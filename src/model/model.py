@@ -6,89 +6,92 @@ import torch
 
 import torch.nn as nn
 
-class Model(nn):
-    def __init__(self, w, v, vA, lr=1e-3, early_stop = 1e-5 
-                verbose=False):
+from ..utill.WAgraph import WAgraph
+
+
+class Model(nn.Module):
+    def __init__(self, w, v, vA, mu, constraint, W_init = None, A_init = None, seed = 1, verbose=False):
         super(Model, self).__init__()
-        self.constraint = constraint
-        self.lr=lr
+        self.w = w
+        self.v = v
+        self.vA = vA
+        self.mu = mu
+        self.cons = constraint
+
+        #TODO i dont think this does anything??
+        self.seed = seed
+
+        #TODO move to logging
         self.vprint = print if verbose else lambda *a, **k: None
+ 
 
         # Placeholders and variables
-        self.lr = lr
-        self.X = torch.zeros([self.n, self.d], dtype=torch.float32)
-        self.W = nn.Parameter(torch.zeros([self.d, self.d], dtype=torch.float32))
-        self.A = nn.Parameter(torch.zeros([self.d, self.d], dtype=torch.float32))
+        # They are assigned to self and to WA so self.paraeters works
+        #TODO make less clunky 
+        if W_init is None:
+           self.W = nn.Parameter(torch.zeros([v, v], dtype=torch.float32))
+        else:
+           assert(v == W_init.size()[0])
+           assert(v == W_init.size()[1])
+           self.W = nn.Parameter(torch.tensor(W_init), dtype=torch.float32)
 
-        self.score = loss(self.X)
+        if A_init is None:
+           self.A = nn.Parameter(torch.zeros([w, v, vA], dtype=torch.float32))
+        else:
+           assert((w, v, vA).equals(A_init.shape))
+           self.A = nn.Parameter(torch.tensor(A_init), dtype=torch.float32)
 
-        self.train_op = torch.optim.Adam(self.parameters(), lr=self.lr)
+        self.WA = WAgraph(self.W, self.A)
 
+        self._preprocess()
 
-    def iter(C, data):
+        self.train_op = torch.optim.Adam(self.parameters())
+
+    def _preprocess(self):
+        with torch.no_grad():
+           self.WA.zero_diag()
+           self.WA.constrain(self.cons)
+
+    def set_learning_rate(self, learning_rate):
+        self.learning_rate = learning_rate
+        self.train_op = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
+    def run(self, X):
+        X = torch.tensor(X, dtype=torch.float32) 
+        score, info = self.loss(X)
+        return score, info
+
+    def update(self, X):
+        X = torch.tensor(X, dtype=torch.float32) 
+        grad = self.loss_grad(X)
+        if grad is not None:
+           #TODO(increase mu as cons dynamicaly .25 of score)
+           pass
+        else:
+           self.train_op.zero_grad()
+
+           score, info = self.run(X)
+
+           score.backward()
+           self.train_op.step()
+
+        return score, info
+
+    def loss(self, data):
+        #TODO make correct error
+        raise ValueError("not implemented")
+
+    def loss_cons(self, data):
+        return 0
+
+    def loss_grad(self, data):
+        return None
+
+    def loss_cons_grad(self, data):
+        return None
+
+    def checkpoint(self, data, loss, gradW, gradA):
         pass
 
-
-    def train(data, max_iter=100, checkpoint_iter=1000):
-        def CtoWA(C):
-            w = C[:varables*varables].reshape(v, v)
-            a = C[varables*varables].reshape(w, v, v)
-            return WAgraph(w, a).constrain(self.constraint).fill_diagonal_(0)
-
-        cons = {'type': 'eq', 'fun': loss_cons}
-
-        self.info(data)
-
-        C = torch.tensor(np.rand(w*v*vA + v*v), requires_grad = True)
-
-        last_loss = 1e16
-
-        for iter in range(max_iter):
-            C.zero_grad() 
-            WA = CtoWA(C)
-            loss = self.loss(data, WA)
-            gradW, gradA = self.loss_grad(data, WA) 
-            if grad is None:
-               #TODO incorperate loss_cons
-               loss.backward()
-               gradW = W.grad
-               gradA = A.grad
-            else:
-               W.grad = gradW
-               A.grad = gradA
-
-            self.train_op().step()
-
-            b = model.B.detach().numpy()
-            np.fill_diagonal(b,0)
-
-            if iter%checkpoint_iter == 0:
-               self.checkpoint(data, loss, gradW, gradA)
-
-            if loss-last_loss < early_stop:
-               self.vprint("EARLY STOP iter: {}".format(iter))
-               self.checkpoint(data, loss, gradW, gradA)
-               break 
-        
-
-        self.postProcess()
-
-        return WAgraph(W, A)
-
-    def loss(data):
-        throw ValueError("not implemented")
-
-    def loss_cons(data):
-        return None
-
-    def loss_grad(data):
-        return None
-
-    def info(data):
-        self.vprint("not implemented")
-
-    def checkpoint(data, loss, gradW, gradA):
-        self.vprint("not implemented")
-
-    def postProcess():
-        self.vprint("not implemented")
+    def postProcess(self):
+        raise ValueError("not implemented")

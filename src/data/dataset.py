@@ -26,7 +26,8 @@ class Dataset:
         cons.validate(w, v, vA)
         self.cons=cons
         WA.validate(w, v, vA)
-        self.WA = cons.constrainWA(WA)
+        self.WA = WA
+        cons.constrainWA(WA)
 
     def getData(self):
         return self.data
@@ -58,9 +59,9 @@ class Dataset:
 
 
         def step(data):
-            dataA = np.tensordot(self.WA.A, data[:self.w], axes=((0,1),(0,1)))
+            dataA = np.tensordot(self.WA.getA(), data[:self.w], axes=((0,1),(0,1)))
             dataR = noiseFunc(data[0])
-            dataW = np.matmul(self.WA.W, dataR)
+            dataW = np.matmul(self.WA.getW(), dataR)
 
             newData = np.array([dataW + dataR + dataA])
 
