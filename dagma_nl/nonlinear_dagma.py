@@ -89,8 +89,21 @@ class DagmaMLP(nn.Module):
             A scalar value of the log-det acyclicity function :math:`h(\Theta)`.
         """
         fc1_weight = self.fc1.weight
-        fc1_weight = fc1_weight.t().view(self.dims[0], -1, self.d)
+        A_i = torch.zeros([self.dims[0], self.d])
+        for i in range(self.d):
+            # print(fc1_weight[:self.dims[1]])
+            A_i[:,  i] = torch.sum(fc1_weight[i*self.dims[1]:self.dims[1] * (i+1)]**2, axis=0)
+        # print(fc1_weight.shape)
+        fc1_weight = fc1_weight.t().view(self.dims[0], self.dims[1], self.d)
+        # A = torch.sum(fc1_weight ** 2, dim=1)
+        # print(A.shape)
         A = torch.sum(fc1_weight ** 2, dim=1)[:self.d]  # [i, j]
+        A_i= A_i[:self.d]
+
+        # print(A)
+        # print(A_i)
+        A = A_i
+
         h = -torch.slogdet(s * self.I - A)[1] + self.d * np.log(s)
         return h
 
@@ -117,10 +130,16 @@ class DagmaMLP(nn.Module):
             :math:`(d,d)` weighted adjacency matrix 
         """
         fc1_weight = self.fc1.weight
+        A_i = torch.zeros([self.dims[0], self.d])
+        for i in range(self.d):
+            A_i[:,  i] = torch.sum(fc1_weight[i*self.dims[1]:self.dims[1] * (i+1)]**2, axis=0)
         # print(fc1_weight.shape)
-        fc1_weight = fc1_weight.t().view(self.dims[0], -1, self.d)
+        fc1_weight = fc1_weight.t().view(self.dims[0], self.dims[1], self.d)
         A = torch.sum(fc1_weight ** 2, dim=1)
         # print(A.shape)
+        # print(A)
+        # print(A_i)
+        A = A_i
         W = torch.sqrt(A)
         W = W.cpu().detach().numpy()  # [i, j]
         return W
@@ -355,7 +374,7 @@ def test():
     from generate_data import SyntheticDataset
     
     n, d, p = 1000, 5, 3
-    dag_obj = SyntheticDataset(n, d, p, B_scale=1.0, graph_type='ER', degree=2, A_scale=1.0, noise_type='EV')
+    dag_obj = SyntheticDataset(n, d, p, B_scale=1.0, graph_type='ER', degree=2, A_scale=1.0, noise_type='EV', mlp=True)
 
     A_true = dag_obj.A
     X = dag_obj.X
@@ -364,7 +383,8 @@ def test():
     eq_model = DagmaMLP(dims=[(p+1) * d, 10, 1], out_dims=d, bias=True)
     model = DagmaNonlinear(eq_model)
     adj = eq_model.fc1_to_adj()
-    W_est = model.fit(X, Y, lambda1=0.02, lambda2=0.005)
+    print(adj.shape)
+    W_est = model.fit(X, Y, lambda1=0.02, lambda2=0.05, lr=0.002)
     return W_est, A_true
     
     
