@@ -4,7 +4,7 @@
 
 # Comparisons of Causal Discovery Optimization Methods
 
-__This project extrapolates 2 differetn methods for causal descovery into timeseries data and compares them to the effectivness of existing methods:
+This project extrapolates 2 different methods for causal descovery into timeseries data and compares them to the effectivness of existing methods:
 
 - GOLEM
 - DAGMA
