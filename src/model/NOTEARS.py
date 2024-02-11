@@ -6,7 +6,7 @@ import numpy as np
 
 class NOTEARS(Model):
 
-      def __init__(self, w, v, l1=1e-3, l2=1e-3, mu=10, constraint = None,
+      def __init__(self, w, v, ET="l2", l1=1e-3, l2=1e-3, mu=10, constraint = None,
                          W_init = None, seed = 1, verbose=False):
           self.l1 = l1
           self.l2 = l2
@@ -20,11 +20,18 @@ class NOTEARS(Model):
           A = self.WA.A
 
           X_NOW = X[0]
-          X_W = torch.matmul(W, X_NOW)
           X_A = torch.stack([torch.tensordot(A, X[i:i+self.w], dims=((0,1),(0,1)))
                     for i in range(1, X.size()[0]-self.w+1)])
 
-          likelyhood = torch.square(torch.norm(X_NOW - X_W - X_A, "fro"))/X.size()[2]
+          if ET == "l2":
+             X_W = torch.matmul(W, X_NOW)
+             likelyhood = torch.square(torch.norm(X_NOW - X_W - X_A, "fro"))/X.size()[2]
+
+          elif ET == "INV":
+             W_inv = torch.inv(torch.eye(W.size()[1]) + W)
+             likelyhood = torch.square(torch.norm(torch.mul(W_inv, X_NOW - X_A) - 
+                                       torch.eye(W.size()[1])))/X.size()[2]
+
           sparcityW = torch.norm(W, 1) 
           sparcityA = torch.norm(A, 1)
 

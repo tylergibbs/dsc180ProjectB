@@ -6,7 +6,7 @@ import numpy as np
 
 class DAGMA(Model):
 
-      def __init__(self, w, v, l1=1e-3, l2=1e-3, mu=10, constraint = None,
+      def __init__(self, w, v, ET='l2', l1=1e-3, l2=1e-3, mu=10, constraint = None,
                          W_init = None, seed = 1, verbose=False):
           self.l1 = l1
           self.l2 = l2
@@ -24,7 +24,23 @@ class DAGMA(Model):
           X_A = torch.stack([torch.tensordot(A, X[i:i+self.w], dims=((0,1),(0,1)))
                     for i in range(1, X.size()[0]-self.w+1)])
 
-          likelyhood = torch.square(torch.norm(X_NOW - X_W - X_A, "fro"))/X.size()[2]
+
+          if ET == "NIEVE":
+             likelyhood = torch.square(torch.norm(X_NOW - X_W - X_A, "fro"))/X.size()[2]
+          
+          elif ET == "l2":
+             Xmod = X_NOW - torch.tensordot(A, X[:self.w], dims=((0,1),(0,1)))
+             c = self.cov = Xmod.T @ Xmod / Xmod.size()[2]
+             dif = self.Id - W 
+             rhs = c @ dif
+             likelyhood = 0.5 * np.trace(dif.T @ rhs)
+
+          elif ET == "INV":
+             W_inv = torch.inv(torch.eye(W.size()[1]) + W)
+             likelyhood = torch.square(torch.norm(torch.mul(W_inv, X_NOW - X_A) -
+                                       torch.eye(W.size()[1])))/X.size()[2]
+
+
           sparcityW = torch.norm(W, 1) 
           sparcityA = torch.norm(A, 1)
 
