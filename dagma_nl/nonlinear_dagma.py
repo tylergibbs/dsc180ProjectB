@@ -380,11 +380,11 @@ def test():
     X = dag_obj.X
     Y = dag_obj.Y
 
-    eq_model = DagmaMLP(dims=[(p+1) * d, 10, 1], out_dims=d, bias=True)
+    eq_model = DagmaMLP(dims=[(p+1) * d, 30, 1], out_dims=d, bias=True)
     model = DagmaNonlinear(eq_model)
     adj = eq_model.fc1_to_adj()
     print(adj.shape)
-    W_est = model.fit(X, Y, lambda1=0.02, lambda2=0.05, lr=0.002)
+    W_est = model.fit(X, Y, lambda1=0.01, lambda2=0.03, lr=0.02, w_threshold=0)
     return W_est, A_true
     
     

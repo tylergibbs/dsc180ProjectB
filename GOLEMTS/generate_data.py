@@ -78,7 +78,7 @@ class SyntheticDataset:
         """Generate B_bin, B and X."""
         A_list = []
         for i in range(self.p):
-            Abin = SyntheticDataset.simulate_A_bin(self.d, self.degree)
+            Abin = SyntheticDataset.simulate_A_bin(self.d, self.degree, self.p)
             if self.mlp:
                 A_list.append(Abin)
             else:
@@ -163,8 +163,8 @@ class SyntheticDataset:
         return Z, Y 
 
     @staticmethod
-    def simulate_A_bin(d, degree):
-        p = float(degree) / (d - 1)
+    def simulate_A_bin(d, degree, p):
+        p = float(degree) / (p*d - 1)
         return np.random.choice([0, 1], (d, d), p=[1-p, p])
 
     @staticmethod
