@@ -5,6 +5,8 @@ import logging
 import igraph as ig
 import networkx as nx
 import numpy as np
+from scipy.special import expit as sigmoid
+
 
 def is_dag(B):
     """Check whether B corresponds to a DAG.
@@ -29,7 +31,7 @@ class SyntheticDataset:
     """
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, n, d, p, graph_type=None, degree=None, noise_type=None, B_scale=None, A_scale = 1.1, seed=1):
+    def __init__(self, n, d, p, graph_type=None, degree=None, noise_type=None, B_scale=None, A_scale = 1.1, mlp=False, seed=1):
         """Initialize self.
 
         Args:
@@ -48,6 +50,7 @@ class SyntheticDataset:
            self.p = p
            self.graph_type = graph_type
            self.degree = degree
+           self.mlp = mlp
            self.noise_type = noise_type
            self.B_ranges = ((B_scale * -2.0, B_scale * -0.5),
                          (B_scale * 0.5, B_scale * 2.0))
@@ -75,17 +78,57 @@ class SyntheticDataset:
         """Generate B_bin, B and X."""
         A_list = []
         for i in range(self.p):
-            Abin = SyntheticDataset.simulate_A_bin(self.d)
-            Aw = SyntheticDataset.simulate_weight(Abin, self.A_ranges[i])
-            A_list.append(Aw)
+            Abin = SyntheticDataset.simulate_A_bin(self.d, self.degree)
+            if self.mlp:
+                A_list.append(Abin)
+            else:
+                Aw = SyntheticDataset.simulate_weight(Abin, self.A_ranges[i])
+                A_list.append(Aw)
+                
 
         self.B_bin = SyntheticDataset.simulate_random_dag(self.d, self.degree,
                                                          self.graph_type, self.rs)
-        self.B = SyntheticDataset.simulate_weight(self.B_bin, self.B_ranges, self.rs)
+        if self.mlp:
+            self.B = self.B_bin
+        else:
+            
+            self.B = SyntheticDataset.simulate_weight(self.B_bin, self.B_ranges, self.rs)
         self.A = np.vstack([self.B.T, np.vstack(A_list)])
-        self.Z, self.Y = SyntheticDataset.simulate_ts(self.A, self.n, self.noise_type)
+        if self.mlp:
+            self.Z, self.Y = SyntheticDataset.simulate_nonlinear_sem(self.A, self.n, self.noise_type)
+        else:
+            self.Z, self.Y = SyntheticDataset.simulate_ts(self.A, self.n, self.noise_type)
         self.X = self.Y[:, :self.d]
+
         assert is_dag(self.B)
+
+
+    @staticmethod
+    def simulate_nonlinear_sem(A, n, noise_type):
+        d = A.shape[1]
+        p  = int(A.shape[0] / A.shape[1]) - 1
+        Z = None
+        if noise_type == 'EV':
+            Z = np.random.multivariate_normal(np.zeros(A.shape[0]), np.random.uniform(1.0, 2.0) * np.eye(A.shape[0]), size=(n))
+        else:
+            Z = np.random.multivariate_normal(np.zeros(A.shape[0]), np.diag(np.random.uniform(1.0, 2.0, (A.shape[0]))), size=(n))
+        
+        Adag = np.hstack([A, np.zeros(((p+ 1) * d, p * d))])
+        Y = np.zeros([n, (p+ 1) * d])
+        G = nx.DiGraph(Adag)
+
+        ordered_vertices = list(nx.topological_sort(G))
+        assert len(ordered_vertices) == (p+1) * d
+        for i in ordered_vertices:
+            parents = list(G.predecessors(i))
+            hidden = 100
+            W1 = np.random.uniform(low=0.5, high=2.0, size=[len(parents), hidden])
+            W1[np.random.rand(*W1.shape) < 0.5] *= -1
+            W2 = np.random.uniform(low=0.5, high=2.0, size=hidden)
+            W2[np.random.rand(hidden) < 0.5] *= -1
+            Y[:, i] = sigmoid(Y[:, parents] @ W1) @ W2 + Z[:, i]
+        return Z, Y
+
 
 
     @staticmethod
@@ -120,8 +163,9 @@ class SyntheticDataset:
         return Z, Y 
 
     @staticmethod
-    def simulate_A_bin(d):
-        return np.random.choice([0, 1], (d, d), p=[0.9, 0.1])
+    def simulate_A_bin(d, degree):
+        p = float(degree) / (d - 1)
+        return np.random.choice([0, 1], (d, d), p=[1-p, p])
 
     @staticmethod
     def simulate_er_dag(d, degree, rs=np.random.RandomState(1)):
