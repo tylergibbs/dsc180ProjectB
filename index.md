@@ -1,7 +1,21 @@
 
 
+{% tabs log %}
 
--tyler gibbs
+{% tab log Introduction %}
+Tyler Gibbs
 
+{% endtab %}
 
-temo temp
+{% tab log Testing %}
+
+temp
+
+{% endtab %}
+
+{% tab log Usage %}
+
+temp temp
+{% endtab %}
+
+{% endtabs %}
