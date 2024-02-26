@@ -1,13 +1,13 @@
 
-### Introduction 
+# Introduction 
 
 ## Causal Analisys
 
-# Relevance 
+### Relevance 
 
-# History
+### History
 
-# Numerical Optimisation
+### Numerical Optimisation
 
 ## DYNOTEARS
 
@@ -15,23 +15,23 @@
 
 ## DAGMA
 
-### Metrics
+# Metrics
 
 ## Synthetic Data
 
-# Replication
+### Replication
 
-# Timeseries vs Asymictric
+### Timeseries vs Asymictric
 
 ## Real World Data
 
-# Genetic data
+### Genetic data
 
-# Stock Market
+### Stock Market
 
-# Predictive Analisys
+### Predictive Analisys
 
-### Usage
+# Usage
 
 ## Run your own
 
