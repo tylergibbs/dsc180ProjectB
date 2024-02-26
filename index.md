@@ -1,21 +1,38 @@
 
+### Introduction 
 
-{% tabs log %}
+## Causal Analisys
 
-{% tab log Introduction %}
-Tyler Gibbs
+# Relevance 
 
-{% endtab %}
+# History
 
-{% tab log Testing %}
+# Numerical Optimisation
 
-temp
+## DYNOTEARS
 
-{% endtab %}
+## GOLEM
 
-{% tab log Usage %}
+## DAGMA
 
-temp temp
-{% endtab %}
+### Metrics
 
-{% endtabs %}
+## Synthetic Data
+
+# Replication
+
+# Timeseries vs Asymictric
+
+## Real World Data
+
+# Genetic data
+
+# Stock Market
+
+# Predictive Analisys
+
+### Usage
+
+## Run your own
+
+## Examples 
