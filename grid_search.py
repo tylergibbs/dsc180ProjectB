@@ -26,13 +26,13 @@ def save_metrics(A_est, A_true, param_dict, output_dir):
 # model_func: model function that with args corresponding to grid dicts
 # output_dir, where to save the results
 # log performance metrics for each entry in grid
-def perform_grid_search(grid, model_func, output_dir):
+def perform_grid_search(grid, model_func, output_dir, thresh=0.0):
     # we have the grid already, now we just iterate thru it
     for g in grid:
         # get estimantes and true dag
         A_est, A_true = model_func(**g)
         # post process
-        A_est, A_true = postprocess_A(A_est, A_true)
+        A_est, A_true = postprocess_A(A_est, A_true, graph_thres=thresh)
         # save metrics
         metrics = save_metrics(A_est, A_true, param_dict=g, output_dir=output_dir)
         print(metrics)

@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch
 
 
-class GolemTS(nn.Module):
+class GolemTS2(nn.Module):
     """Set up the objective function of GOLEM.
 
     Hyperparameters:
@@ -18,7 +18,7 @@ class GolemTS(nn.Module):
     """
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, n, d, p, Y, lambda_1, lambda_2,
+    def __init__(self, n, d, p, Y, lambda_1, lambda_2, lambda_3,
                  seed=1, A_init=None, ev=False, lr=1e-3):
         """Initialize self.
 
@@ -34,7 +34,7 @@ class GolemTS(nn.Module):
                 initialization. Set to None to disable. Default: None.
         """
 
-        super(GolemTS, self).__init__()
+        super(GolemTS2, self).__init__()
 
         self.n = n
         self.ev = ev
@@ -43,34 +43,43 @@ class GolemTS(nn.Module):
         self.seed = seed
         self.lambda_1 = lambda_1
         self.lambda_2 = lambda_2
+        self.lambda_3 = lambda_3
         self.A_init = A_init
+
+        self.d_prime = (p + 1) * d
 
         self.U = torch.vstack([torch.eye(d), torch.zeros((p * d, d))])
 
         # Placeholders and variables
         self.lr = lr
-        self.X = torch.zeros([self.n, self.d], dtype=torch.float32)
-        # self.Y = torch.zeros([self.n, (self.p + 1) * self.d])
         self.Y = torch.tensor(Y, dtype=torch.float32)
-        self.A = nn.Parameter(torch.zeros([self.d * (self.p + 1), self.d], dtype=torch.float32))
+        self.X = self.Y[:, :self.d]
+
+        self.A = torch.zeros([self.d * (self.p + 1), self.d], dtype=torch.float32)
         if self.A_init is not None:
-            self.A = nn.Parameter(torch.tensor(self.A_init, dtype=torch.float32))
+            self.A = torch.tensor(self.A_init, dtype=torch.float32)
         else:
-            self.A = nn.Parameter(torch.zeros([self.d * (self.p + 1), self.d], dtype=torch.float32))
+            self.A = torch.zeros([self.d * (self.p + 1), self.d], dtype=torch.float32)
         with torch.no_grad():
             self.A = self._preprocess(self.A)
 
+        # new VAR
+        self.E = torch.zeros([self.d_prime, self.p * self.d])
+        self.B = nn.Parameter(torch.hstack([self.A, self.E]))
+        
+
         # Likelihood, penalty terms and score
         self.likelihood, self.ev_res = self._compute_likelihood()
-        self.L1_penalty = self._compute_L1_penalty()
+        self.L1_penalty_E = self._compute_L1_penalty_E()
+        self.L1_penalty_A = self._compute_L1_penalty_A()
         self.h = self._compute_h()
-        self.score = self.likelihood + self.lambda_1 * self.L1_penalty + self.lambda_2 * self.h
+        self.score = self.likelihood + self.lambda_1 * self.L1_penalty_A + self.lambda_2 * self.h + self.lambda_3 * self.L1_penalty_E
         # Optimizer
         self.train_op = torch.optim.Adam(self.parameters(), lr=self.lr)
         self._logger.debug("Finished building PYTORCH graph.")
     
     def get_W(self):
-        return self.A[:self.d]
+        return self.B[:self.d, :self.d]
 
     def set_learning_rate(self, lr):
         self.lr = lr
@@ -79,9 +88,10 @@ class GolemTS(nn.Module):
     def run(self, Y):
         self.Y = torch.tensor(Y, dtype=torch.float32)
         self.likelihood, self.ev_res = self._compute_likelihood()
-        self.L1_penalty = self._compute_L1_penalty()
+        self.L1_penalty_E = self._compute_L1_penalty_E()
+        self.L1_penalty_A = self._compute_L1_penalty_A()
         self.h = self._compute_h()
-        self.score = self.likelihood + self.lambda_1 * self.L1_penalty + self.lambda_2 * self.h
+        self.score = self.likelihood + self.lambda_1 * self.L1_penalty_A + self.lambda_2 * self.h + self.lambda_3 * self.L1_penalty_E
         return self.score, self.likelihood, self.ev_res
 
 
@@ -102,33 +112,51 @@ class GolemTS(nn.Module):
         Returns:
             tf.Tensor: Likelihood term (scalar-valued).
         """
-        I = torch.eye((self.p + 1) * self.d)
-        ep = 1e-7
-        Binv = self.U - self.A
-        B = torch.pinverse(Binv)
-        reg = 2
-        # print(self.A)
-        # print(Binv)
-        # print(self.Y @ Binv)
-        omega = torch.diag(torch.diag((self.Y @ Binv).T @ (self.Y @ Binv))) / self.n
-        with torch.no_grad():
-            ev_res = (0.5 * torch.log(torch.trace(omega) / self.d))
+        ev_res = torch.square(
+                    torch.norm(self.X - self.cut(self.Y @ self.B), p=2)
+                )
         if self.ev:
-            # with torch.no_grad():
-                # print(torch.logdet(B.T @ B + ep * I) / self.n)
-            return (0.5 * torch.log(torch.trace(omega) / self.d))  + 0.5 * (1/ self.A.shape[0]) * torch.logdet(B.T @ B + ep * I), ev_res
+            return 0.5 * self.d * torch.log(
+                torch.square(
+                    torch.norm(self.X - self.cut(self.Y @ self.B), p=2)
+                )
+              # ) - torch.linalg.slogdet(torch.eye(self.d) - self.get_W())[1], ev_res
+               ) - torch.linalg.slogdet(torch.eye(self.d_prime) - self.B)[1], ev_res
         else:
-        # print((self.Y @ Binv).T @ (self.Y @ Binv))
-            return 0.5 * torch.logdet(B.T @ omega @ B + ep * I), ev_res
+            return 0.5 * torch.sum(
+                torch.log(
+                    torch.sum(
+                        torch.square(self.X - self.cut(self.Y @ self.B)), axis=0
+                    )
+                )
+            ) - torch.linalg.slogdet(torch.eye(self.d_prime) - self.B)[1], ev_res
 
 
-    def _compute_L1_penalty(self):
+    def cut(self, M):
+        return M[:, :self.d]
+
+    def get_A(self):
+        return self.B[:, :self.d]
+    
+
+    def get_E(self):
+        return self.B[:, self.d:]
+
+    def _compute_L1_penalty_A(self):
         """Compute L1 penalty.
 
         Returns:
             tf.Tensor: L1 penalty term (scalar-valued).
         """
-        return torch.norm(self.A, p=1)
+        return torch.norm(self.get_A(), p=1)
+    
+    def _compute_L1_penalty_E(self):
+        """Compute L1 penalty.
+
+        Returns:
+            tf.Tensor: L1 penalty term (scalar-valued).
+        """
+        return torch.norm(self.get_E(), p=1)
 
     def _compute_h(self):
         """Compute DAG penalty.

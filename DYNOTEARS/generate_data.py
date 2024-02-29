@@ -134,7 +134,7 @@ class SyntheticDataset:
     @staticmethod
     def simulate_ts(A, n, noise_type):
 
-
+        
         # generate noize vector Z (d x d)
         d = A.shape[1]
         p  = int(A.shape[0] / A.shape[1]) - 1
