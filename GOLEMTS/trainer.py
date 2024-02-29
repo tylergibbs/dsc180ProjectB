@@ -16,8 +16,9 @@ def train(model, Y, epochs=1_000, log=False, warmup_epochs=0, center_data=True):
         score, likelihood, ev_res = train_step(model, Y,epoch=i)
         if i % 100 == 0:
             # print(score)
-            print(f'likelihood: {likelihood}')
-            print(model.A.grad)
+            if log:
+                print(f'likelihood: {likelihood}')
+            # print(model.B.grad)
 
             # print(h)
             likes.append(likelihood.detach().numpy())
