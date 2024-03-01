@@ -38,8 +38,12 @@ import pandas as pd
 import scipy.linalg as slin
 import scipy.optimize as sopt
 
-from structuremodel import StructureModel
-from transformers import DynamicDataTransformer
+try:
+    from structuremodel import StructureModel
+    from transformers import DynamicDataTransformer
+except ImportError:
+    from .structuremodel import StructureModel
+    from .transformers import DynamicDataTransformer
 
 
 def from_pandas_dynamic(  # pylint: disable=too-many-arguments

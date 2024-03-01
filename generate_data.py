@@ -54,6 +54,8 @@ class SyntheticDataset:
            self.noise_type = noise_type
            self.B_ranges = ((B_scale * -2.0, B_scale * -0.5),
                          (B_scale * 0.5, B_scale * 2.0))
+           
+           self.d_prime = (p+1) * d
            self.A_ranges = []
            for i in range(self.p):
                A_s = (1 / (A_scale**(i)))
@@ -107,15 +109,11 @@ class SyntheticDataset:
     def simulate_nonlinear_sem(A, n, noise_type):
         d = A.shape[1]
         p  = int(A.shape[0] / A.shape[1]) - 1
-        Z = None
-        if noise_type == 'EV':
-            Z = np.random.multivariate_normal(np.zeros(A.shape[0]), np.random.uniform(1.0, 2.0) * np.eye(A.shape[0]), size=(n))
-        else:
-            Z = np.random.multivariate_normal(np.zeros(A.shape[0]), np.diag(np.random.uniform(1.0, 2.0, (A.shape[0]))), size=(n))
         
         Adag = np.hstack([A, np.zeros(((p+ 1) * d, p * d))])
         Y = np.zeros([n, (p+ 1) * d])
         G = nx.DiGraph(Adag)
+        Z = SyntheticDataset.gen_Z(n, A.shape[0], noise_type)
 
         ordered_vertices = list(nx.topological_sort(G))
         assert len(ordered_vertices) == (p+1) * d
@@ -130,6 +128,22 @@ class SyntheticDataset:
         return Z, Y
 
 
+    @staticmethod
+    def gen_Z(n, d_prime, noise_type):
+        if noise_type == 'EV':
+            Z = np.random.multivariate_normal(np.zeros(d_prime), np.random.uniform(1.0, 2.0) * np.eye(d_prime), size=(n))
+        elif noise_type == 'NV':
+            Z = np.random.multivariate_normal(np.zeros(d_prime), np.diag(np.random.uniform(1.0, 2.0, (d_prime))), size=(n))
+        
+        elif noise_type == 'EXP':
+            Z = np.random.exponential(size=(n, d_prime))
+        elif noise_type == 'GUMBEL':
+            Z = np.random.gumbel(size=(n, d_prime))
+
+        else:
+            return -1
+
+        return Z
 
     @staticmethod
     def simulate_ts(A, n, noise_type):
@@ -138,11 +152,7 @@ class SyntheticDataset:
         # generate noize vector Z (d x d)
         d = A.shape[1]
         p  = int(A.shape[0] / A.shape[1]) - 1
-        Z = None
-        if noise_type == 'EV':
-            Z = np.random.multivariate_normal(np.zeros(A.shape[0]), np.random.uniform(1.0, 2.0) * np.eye(A.shape[0]), size=(n))
-        else:
-            Z = np.random.multivariate_normal(np.zeros(A.shape[0]), np.diag(np.random.uniform(1.0, 2.0, (A.shape[0]))), size=(n))
+        Z = SyntheticDataset.gen_Z(n, A.shape[0], noise_type)
         # create Adag
         Adag = np.hstack([A, np.zeros(((p+ 1) * d, p * d))])
         Y = np.zeros([n, (p+ 1) * d])
@@ -164,8 +174,10 @@ class SyntheticDataset:
 
     @staticmethod
     def simulate_A_bin(d, degree, p):
-        p = float(degree) / (p*d - 1)
-        return np.random.choice([0, 1], (d, d), p=[1-p, p])
+        prob = float(degree) / (p*d - 1)
+        if prob >= 1.0:
+            prob = 0.5
+        return np.random.choice([0, 1], (d, d), p=[1-prob, prob])
 
     @staticmethod
     def simulate_er_dag(d, degree, rs=np.random.RandomState(1)):

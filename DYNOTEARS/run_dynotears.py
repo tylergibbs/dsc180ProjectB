@@ -1,5 +1,10 @@
-from generate_data import SyntheticDataset
-import dynotears
+try:
+    from generate_data import SyntheticDataset
+    import dynotears
+except ImportError:
+    from .generate_data import SyntheticDataset
+    from . import dynotears as dynotears
+
 import numpy as np
 
 def gen_dag(n, d, p, noise_type='EV', degree=2):

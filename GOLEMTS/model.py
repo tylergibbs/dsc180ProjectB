@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch
 
 
-class GolemTS2(nn.Module):
+class GolemTS(nn.Module):
     """Set up the objective function of GOLEM.
 
     Hyperparameters:
@@ -34,7 +34,7 @@ class GolemTS2(nn.Module):
                 initialization. Set to None to disable. Default: None.
         """
 
-        super(GolemTS2, self).__init__()
+        super(GolemTS, self).__init__()
 
         self.n = n
         self.ev = ev

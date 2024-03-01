@@ -367,14 +367,14 @@ class DagmaNonlinear:
         return W_est
 
 
-def test():
+def test(mlp=True):
     from timeit import default_timer as timer
     torch.manual_seed(1)
 
     from generate_data import SyntheticDataset
     
     n, d, p = 1000, 5, 3
-    dag_obj = SyntheticDataset(n, d, p, B_scale=1.0, graph_type='ER', degree=2, A_scale=1.0, noise_type='EV', mlp=True)
+    dag_obj = SyntheticDataset(n, d, p, B_scale=1.0, graph_type='ER', degree=2, A_scale=1.0, noise_type='EV', mlp=mlp)
 
     A_true = dag_obj.A
     X = dag_obj.X

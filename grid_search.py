@@ -40,8 +40,8 @@ def perform_grid_search(grid, model_func, output_dir, thresh=0.0):
 # example usage using dagma
 def test_dagma(output_dir):
     # required imports for dagma
-    from dagma_nl import nonlinear_dagma
-    from dagma_nl.generate_data import SyntheticDataset
+    from dagma import nonlinear_dagma
+    from dagma.generate_data import SyntheticDataset
 
 
 
