@@ -26,7 +26,7 @@ def train(model, Y, device, epochs=1_000, log=False, warmup_epochs=0, center_dat
                 print(f'likelihood: {likelihood}')
                 print(f'Score: {score}')
             # print(model.B.grad)
-            print((score.cpu().detach().numpy() - scores[-1]) / scores[-1])
+            # print((score.cpu().detach().numpy() - scores[-1]) / scores[-1])
             if es and np.abs(score.cpu().detach().numpy() - scores[-1]) / scores[-1] < es_tol:
                 # we must either: skip warmup, or end entirely
                 if i < warmup_epochs:
