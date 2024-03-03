@@ -1,7 +1,0 @@
-{"fdr": 0.25, "tpr": 0.75, "fpr": 0.13793103448275862, "shd": 6, "pred_size": 16, "n": 50, "p": 1, "d": 5, "degree": 2, "noise_type": "EV", "mlp": true, "runtime": 298.3067002296448, "model_name": "DAGMATS"}
-{"fdr": 0.5, "tpr": 0.5, "fpr": 0.4, "shd": 17, "pred_size": 20, "n": 50, "p": 1, "d": 5, "degree": 2, "noise_type": "EV", "mlp": true, "runtime": 220.4933774471283, "model_name": "DAGMATS"}
-{"fdr": 0.3333333333333333, "tpr": 0.6666666666666666, "fpr": 0.2222222222222222, "shd": 11, "pred_size": 18, "n": 50, "p": 1, "d": 5, "degree": 2, "noise_type": "EV", "mlp": true, "runtime": 229.7010383605957, "model_name": "DAGMATS"}
-{"fdr": 0.0625, "tpr": 0.75, "fpr": 0.04, "shd": 6, "pred_size": 16, "n": 50, "p": 1, "d": 5, "degree": 2, "noise_type": "EV", "mlp": true, "runtime": 209.08623456954956, "model_name": "DAGMATS"}
-{"fdr": 0.6190476190476191, "tpr": 0.5333333333333333, "fpr": 0.43333333333333335, "shd": 17, "pred_size": 21, "n": 50, "p": 1, "d": 5, "degree": 2, "noise_type": "EV", "mlp": true, "runtime": 220.1890275478363, "model_name": "DAGMATS"}
-{"fdr": 0.36363636363636365, "tpr": 0.6363636363636364, "fpr": 0.34782608695652173, "shd": 16, "pred_size": 22, "n": 50, "p": 1, "d": 5, "degree": 2, "noise_type": "EV", "mlp": true, "runtime": 162.908194065094, "model_name": "DAGMATS"}
-{"fdr": 0.2, "tpr": 0.8421052631578947, "fpr": 0.15384615384615385, "shd": 7, "pred_size": 20, "n": 50, "p": 1, "d": 5, "degree": 2, "noise_type": "EV", "mlp": true, "runtime": 180.19010472297668, "model_name": "DAGMATS"}

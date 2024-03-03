@@ -5,6 +5,7 @@ import jsonlines
 import grid_search
 import time
 import copy
+import torch
 
 import DYNOTEARS.run_dynotears as run_dynotears
 from GOLEMTS.model import GolemTS
@@ -23,9 +24,13 @@ def dynotears(dag_obj):
 
 # golemts EV
 def golemts_EV(dag_obj):
-    model = GolemTS(n=dag_obj.n, d=dag_obj.d, p=dag_obj.p, Y=dag_obj.Y, lambda_1=0.01, lambda_2=1.0, A_init=None, ev=True, lr=3e-3, lambda_3=5.0)
-    likes, evs = trainer.train(model, dag_obj.Y, epochs=50_000, warmup_epochs=0, log=False)
-    model_B = model.B.detach().numpy()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    model = GolemTS(n=dag_obj.n, d=dag_obj.d, p=dag_obj.p, Y=dag_obj.Y, lambda_1=0.01, lambda_2=1.0, A_init=None, ev=True, lr=3e-3, lambda_3=5.0, device=device)
+    model = model.to(device)
+    likes, evs = trainer.train(model, dag_obj.Y, epochs=50_000, warmup_epochs=0, log=False, device=device, es_tol=4e-4)
+    
+    model_B = model.B.cpu().detach().numpy()
     model_B[np.abs(model_B) < 0.2] = 0
     model_A = model_B[:, :dag_obj.d]
     return model_A
@@ -34,9 +39,12 @@ def golemts_EV(dag_obj):
 
 # golemts NV
 def golemts_NV(dag_obj):
-    model = GolemTS(n=dag_obj.n, d=dag_obj.d, p=dag_obj.p, Y=dag_obj.Y, lambda_1=0.01, lambda_2=1.0, A_init=None, ev=False, lr=3e-3, lambda_3=5.0)
-    likes, evs = trainer.train(model, dag_obj.Y, epochs=50_000, warmup_epochs=20_000, log=False)
-    model_B = model.B.detach().numpy()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    model = GolemTS(n=dag_obj.n, d=dag_obj.d, p=dag_obj.p, Y=dag_obj.Y, lambda_1=0.01, lambda_2=1.0, A_init=None, ev=False, lr=3e-3, lambda_3=5.0, device=device)
+    model = model.to(device)
+    likes, evs = trainer.train(model, dag_obj.Y, epochs=50_000, warmup_epochs=20_000, log=False, device=device, es_tol=4e-4)
+    model_B = model.B.cpu().detach().numpy()
     model_B[np.abs(model_B) < 0.2] = 0
     model_A = model_B[:, :dag_obj.d]
     return model_A
@@ -70,9 +78,11 @@ def dagmats_nl(dag_obj):
     W_est = model.fit(dag_obj.X, dag_obj.Y, lambda1=lambda1, lambda2=lambda2, lr=lr, w_threshold=0)
     return W_est
 
+
 function_dict = {
-    'DAGMATS': dagma_ts,
-    'DAGMATS-NL': dagmats_nl
+   
+    'GOLEMTS-EV': golemts_EV,
+    'GOLEMTS-NV': golemts_NV
 }
 
 
@@ -82,7 +92,7 @@ def gen_dags(
         nodes = [5, 10, 20, 50, 100],
         ps = [1],
         noise_types = ['EV', 'NV', 'EXP', 'GUMBEL'],
-        mlps = [True, False],
+        mlps = [False, True],
         reps=10
     ):
     dag_list = []
