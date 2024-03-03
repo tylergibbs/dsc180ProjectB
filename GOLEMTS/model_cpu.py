@@ -18,7 +18,7 @@ class GolemTS(nn.Module):
     """
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, n, d, p, Y, lambda_1, lambda_2, lambda_3, device,
+    def __init__(self, n, d, p, Y, lambda_1, lambda_2, lambda_3,
                  seed=1, A_init=None, ev=False, lr=1e-3):
         """Initialize self.
 
@@ -48,6 +48,7 @@ class GolemTS(nn.Module):
 
         self.d_prime = (p + 1) * d
 
+        self.U = torch.vstack([torch.eye(d), torch.zeros((p * d, d))])
 
         # Placeholders and variables
         self.lr = lr
@@ -61,21 +62,10 @@ class GolemTS(nn.Module):
             self.A = torch.zeros([self.d * (self.p + 1), self.d], dtype=torch.float32)
         with torch.no_grad():
             self.A = self._preprocess(self.A)
-        
-        
-        self.device = device
 
         # new VAR
         self.E = torch.zeros([self.d_prime, self.p * self.d])
-        self.B = nn.Parameter(torch.hstack([self.A, self.E]).to(self.device))
-        
-        
-        self.I = torch.eye(self.d_prime).to(self.device)
-
-        
-        self.Y = self.Y.to(self.device)
-        self.X = self.X.to(self.device)
-        # self.B = self.B.to(self.device)
+        self.B = nn.Parameter(torch.hstack([self.A, self.E]))
         
 
         # Likelihood, penalty terms and score
@@ -96,7 +86,7 @@ class GolemTS(nn.Module):
         self.train_op = torch.optim.Adam(self.parameters(), lr=self.lr)
     
     def run(self, Y):
-        self.Y = torch.tensor(Y.clone().detach(), dtype=torch.float32)
+        self.Y = torch.tensor(Y, dtype=torch.float32)
         self.likelihood, self.ev_res = self._compute_likelihood()
         self.L1_penalty_E = self._compute_L1_penalty_E()
         self.L1_penalty_A = self._compute_L1_penalty_A()
@@ -131,7 +121,7 @@ class GolemTS(nn.Module):
                     torch.norm(self.X - self.cut(self.Y @ self.B), p=2)
                 )
               # ) - torch.linalg.slogdet(torch.eye(self.d) - self.get_W())[1], ev_res
-               ) - torch.linalg.slogdet(self.I - self.B)[1], ev_res
+               ) - torch.linalg.slogdet(torch.eye(self.d_prime) - self.B)[1], ev_res
         else:
             return 0.5 * torch.sum(
                 torch.log(
@@ -139,7 +129,7 @@ class GolemTS(nn.Module):
                         torch.square(self.X - self.cut(self.Y @ self.B)), axis=0
                     )
                 )
-            ) - torch.linalg.slogdet(self.I - self.B)[1], ev_res
+            ) - torch.linalg.slogdet(torch.eye(self.d_prime) - self.B)[1], ev_res
 
 
     def cut(self, M):
