@@ -3,9 +3,9 @@ adapeted from https://github.com/kevinsbello/dagma
 """
 
 try:
-   from .locally_connected_dagma import LocallyConnected
+   from .locally_connected_dagma_cpu import LocallyConnected
 except ImportError:
-   from locally_connected_dagma import LocallyConnected
+   from locally_connected_dagma_cpu import LocallyConnected
 
 import torch
 import torch.nn as nn
@@ -24,7 +24,7 @@ class DagmaMLP(nn.Module):
     Class that models the structural equations for the causal graph using MLPs.
     """
     
-    def __init__(self, dims: typing.List[int], out_dims, device, bias: bool = True, dtype: torch.dtype = torch.double):
+    def __init__(self, dims: typing.List[int], out_dims, bias: bool = True, dtype: torch.dtype = torch.double):
         r"""
         Parameters
         ----------
@@ -37,19 +37,18 @@ class DagmaMLP(nn.Module):
         """
         torch.set_default_dtype(dtype)
         super(DagmaMLP, self).__init__()
-        self.device = device
         assert len(dims) >= 2
         assert dims[-1] == 1
         self.dims, self.pd = dims, dims[0]
         self.d = out_dims
         self.I = torch.eye(self.d)
-        self.fc1 = nn.Linear(self.pd, self.d * dims[1], bias=bias, device=self.device)
+        self.fc1 = nn.Linear(self.pd, self.d * dims[1], bias=bias)
         nn.init.zeros_(self.fc1.weight)
         nn.init.zeros_(self.fc1.bias)
         # fc2: local linear layers
         layers = []
         for l in range(len(dims) - 2):
-            layers.append(LocallyConnected(self.d, dims[l + 1], dims[l + 2], bias=bias, device=self.device))
+            layers.append(LocallyConnected(self.d, dims[l + 1], dims[l + 2], bias=bias))
         self.fc2 = nn.ModuleList(layers)
         
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # [n, d] -> [n, d]
@@ -371,7 +370,6 @@ class DagmaNonlinear:
 def test(mlp=True):
     from timeit import default_timer as timer
     torch.manual_seed(1)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     from generate_data import SyntheticDataset
     
@@ -381,11 +379,8 @@ def test(mlp=True):
     A_true = dag_obj.A
     X = dag_obj.X
     Y = dag_obj.Y
-    X = torch.tensor(X).to(device)
-    Y = torch.tensor(Y).to(device)
 
-    eq_model = DagmaMLP(dims=[(p+1) * d, 30, 1], out_dims=d, bias=True, device=device)
-    eq_model = eq_model.to(device)
+    eq_model = DagmaMLP(dims=[(p+1) * d, 30, 1], out_dims=d, bias=True)
     model = DagmaNonlinear(eq_model)
     adj = eq_model.fc1_to_adj()
     print(adj.shape)

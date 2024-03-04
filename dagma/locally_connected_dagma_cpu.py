@@ -13,7 +13,7 @@ class LocallyConnected(nn.Module):
     Implements a local linear layer, i.e. Conv1dLocal() with filter size 1.
     """
     
-    def __init__(self, num_linear: int, input_features: int, output_features: int, device, bias: bool = True):
+    def __init__(self, num_linear: int, input_features: int, output_features: int, bias: bool = True):
         r"""
         Parameters
         ----------
@@ -33,16 +33,15 @@ class LocallyConnected(nn.Module):
         bias : [d, m2]
         """
         super(LocallyConnected, self).__init__()
-        self.device = device
         self.num_linear = num_linear
         self.input_features = input_features
         self.output_features = output_features
 
         self.weight = nn.Parameter(torch.Tensor(num_linear,
                                                 input_features,
-                                                output_features).to(self.device))
+                                                output_features))
         if bias:
-            self.bias = nn.Parameter(torch.Tensor(num_linear, output_features).to(self.device))
+            self.bias = nn.Parameter(torch.Tensor(num_linear, output_features))
         else:
             # You should always register all possible parameters, but the
             # optional ones can be None if you want.
