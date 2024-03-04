@@ -70,6 +70,8 @@ def dagma_ts(dag_obj):
 
 # dagnaTS_nl
 def dagmats_nl(dag_obj):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
     p = dag_obj.p
     d = dag_obj.d
     n = dag_obj.n
@@ -77,9 +79,17 @@ def dagmats_nl(dag_obj):
     lambda1 = 0.02
     lambda2 = 0.005
     lr = 0.02
-    eq_model = nonlinear_dagma.DagmaMLP(dims=[(p+1) * d, h1_dim, 1], out_dims=d, bias=True)
+    eq_model = nonlinear_dagma.DagmaMLP(dims=[(p+1) * d, h1_dim, 1], out_dims=d, bias=True, device=device)
+    eq_model = eq_model.to(device)
+
     model = nonlinear_dagma.DagmaNonlinear(eq_model)
-    W_est = model.fit(dag_obj.X, dag_obj.Y, lambda1=lambda1, lambda2=lambda2, lr=lr, w_threshold=0)
+
+    X = dag_obj.X
+    Y = dag_obj.Y
+    X = torch.tensor(X).to(device)
+    Y = torch.tensor(Y).to(device)
+
+    W_est = model.fit(X, Y, lambda1=lambda1, lambda2=lambda2, lr=lr, w_threshold=0)
     return W_est
 
 
@@ -95,7 +105,7 @@ def gen_dags(
         nodes = [5, 10, 20, 50, 100],
         ps = [1],
         noise_types = ['EV', 'NV', 'EXP', 'GUMBEL'],
-        mlps = [False, True],
+        mlps = [True, False],
         reps=10
     ):
     dag_list = []
