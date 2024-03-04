@@ -35,22 +35,23 @@ class DagmaMLP(nn.Module):
         dtype : torch.dtype, optional
             Float precision, by default ``torch.double``
         """
-        torch.set_default_dtype(dtype)
+        # torch.set_default_dtype(dtype)
         super(DagmaMLP, self).__init__()
         self.device = device
+        self.dtype = dtype
         assert len(dims) >= 2
         assert dims[-1] == 1
         self.dims, self.pd = dims, dims[0]
         self.d = out_dims
-        self.I = torch.eye(self.d)
-        self.fc1 = nn.Linear(self.pd, self.d * dims[1], bias=bias, device=self.device)
+        self.I = torch.eye(self.d).type(self.dtype)
+        self.fc1 = nn.Linear(self.pd, self.d * dims[1], bias=bias, device=self.device).type(self.dtype)
         nn.init.zeros_(self.fc1.weight)
         nn.init.zeros_(self.fc1.bias)
         # fc2: local linear layers
         layers = []
         for l in range(len(dims) - 2):
-            layers.append(LocallyConnected(self.d, dims[l + 1], dims[l + 2], bias=bias, device=self.device))
-        self.fc2 = nn.ModuleList(layers)
+            layers.append(LocallyConnected(self.d, dims[l + 1], dims[l + 2], bias=bias, device=self.device).to(self.device).type(self.dtype))
+        self.fc2 = nn.ModuleList(layers).to(self.device)
         
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # [n, d] -> [n, d]
         r"""
@@ -248,8 +249,10 @@ class DagmaNonlinear:
                 return False
             X_hat = self.model(self.Y)
             score = self.log_mse_loss(X_hat, self.X)
+            
             l1_reg = lambda1 * self.model.fc1_l1_reg()
             obj = mu * (score + l1_reg) + h_val
+
             obj.backward()
             optimizer.step()
             if lr_decay and (i+1) % 1000 == 0: #every 1000 iters reduce lr
@@ -322,7 +325,6 @@ class DagmaNonlinear:
             If the output of :py:meth:`~dagma.nonlinear.DagmaNonlinear.fit` is not a DAG, then the user should try larger values of ``T`` (e.g., 6, 7, or 8) 
             before raising an issue in github.
         """
-        torch.set_default_dtype(self.dtype)
         if type(X) == torch.Tensor:
             self.X = X.type(self.dtype)
         elif type(X) == np.ndarray:
@@ -368,14 +370,14 @@ class DagmaNonlinear:
         return W_est
 
 
-def test(mlp=True):
+def test(mlp=True, d=5):
     from timeit import default_timer as timer
     torch.manual_seed(1)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     from generate_data import SyntheticDataset
     
-    n, d, p = 1000, 5, 3
+    n, d, p = 1000, d, 3
     dag_obj = SyntheticDataset(n, d, p, B_scale=1.0, graph_type='ER', degree=2, A_scale=1.0, noise_type='EV', mlp=mlp)
 
     A_true = dag_obj.A
