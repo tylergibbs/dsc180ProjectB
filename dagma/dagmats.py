@@ -273,7 +273,6 @@ class DagmaLinear:
             If the output of :py:meth:`~dagma.nonlinear.DagmaNonlinear.fit` is not a DAG, then the user should try larger values of ``T`` (e.g., 6, 7, or 8) 
             before raising an issue in github.
         """
-        torch.set_default_dtype(self.dtype)
         if type(X) == torch.Tensor:
             self.X = X.type(self.dtype)
         elif type(X) == np.ndarray:
