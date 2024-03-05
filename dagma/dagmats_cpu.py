@@ -24,7 +24,7 @@ class DagmaTS(nn.Module):
     Class that models the structural equations for the causal graph using MLPs.
     """
     
-    def __init__(self, n, d, p, device, dtype: torch.dtype = torch.double):
+    def __init__(self, n, d, p, dtype: torch.dtype = torch.double):
         r"""
         Parameters
         ----------
@@ -35,15 +35,15 @@ class DagmaTS(nn.Module):
         dtype : torch.dtype, optional
             Float precision, by default ``torch.double``
         """
+        torch.set_default_dtype(dtype)
         super(DagmaTS, self).__init__()
-        self.device = device
-        self.dtype = dtype
         self.n = n
         self.d = d
         self.p = p # autoregressive order
         self.d_prime = (self.p  + 1) * self.d
-        self.I = torch.eye(self.d).type(self.dtype).to(self.device)
-        self.A = nn.Parameter(torch.zeros([self.d_prime, self.d]).type(self.dtype).to(self.device))
+        self.I = torch.eye(self.d)
+        
+        self.A = nn.Parameter(torch.zeros([self.d_prime, self.d]))
 
         
     def forward(self, y: torch.Tensor) -> torch.Tensor:  # [n, d] -> [n, d]
@@ -322,7 +322,6 @@ class DagmaLinear:
 def test():
     from timeit import default_timer as timer
     torch.manual_seed(1)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     from generate_data import SyntheticDataset
     
@@ -332,12 +331,8 @@ def test():
     A_true = dag_obj.A
     X = dag_obj.X
     Y = dag_obj.Y
-    X = torch.tensor(X).to(device)
-    Y = torch.tensor(Y).to(device)
 
-    eq_model = DagmaTS(n=n, p=p, d=d, device=device)
-    eq_model = eq_model.to(device)
-
+    eq_model = DagmaTS(n=n, p=p, d=d)
     model = DagmaLinear(eq_model, verbose=True)
     W_est = model.fit(X, Y, lambda1=0.01, lambda2=0.03, lr=0.02, w_threshold=0)
     return W_est, A_true
