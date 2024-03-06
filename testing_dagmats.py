@@ -54,15 +54,16 @@ def dagma_ts(dag_obj):
     thresh = 0.2
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
-    eq_model = dagmats.DagmaTS(n=n, p=p, d=d, device=device)
     X = dag_obj.X
     Y = dag_obj.Y
     X = torch.tensor(X).to(device)
     Y = torch.tensor(Y).to(device)
+    
+    eq_model = dagmats.DagmaTS(n=n, p=p, d=d, device=device)
     eq_model = eq_model.to(device)
 
     model = dagmats.DagmaLinear(eq_model, verbose=False)
-    W_est = model.fit(dag_obj.X, dag_obj.Y, lambda1=lambda1, lambda2=lambda2, lr=lr, w_threshold=thresh)
+    W_est = model.fit(X, Y, lambda1=lambda1, lambda2=lambda2, lr=lr, w_threshold=thresh)
     return W_est
 
 # dagnaTS_nl
@@ -90,7 +91,7 @@ def gen_dags(
         nodes = [5, 10, 20, 50, 100],
         ps = [1],
         noise_types = ['EV', 'NV', 'EXP', 'GUMBEL'],
-        mlps = [True, False],
+        mlps = [False, True],
         reps=10
     ):
     dag_list = []
@@ -122,7 +123,7 @@ def gen_dags(
                                     'noise_type': noise_type,
                                     'mlp': mlp
                                 })
-    return dag_list, dag_stats
+    return dag_list[1448:], dag_stats[1448:]
 
 
 def test_all_methods(output_dir):

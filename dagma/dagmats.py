@@ -226,8 +226,8 @@ class DagmaLinear:
             mu_init: float = .1, 
             mu_factor: float = .1, 
             s: float = 1.0,
-            warm_iter: int = 5e4, 
-            max_iter: int = 8e4, 
+            warm_iter: int = 5e3, 
+            max_iter: int = 8e3, 
             lr: float = .0002, 
             w_threshold: float = 0.3, 
             checkpoint: int = 1000,
@@ -313,7 +313,7 @@ class DagmaLinear:
                             break # lr is too small
                         s_cur = 1
                 mu *= mu_factor
-        W_est = self.model.A.detach().numpy()
+        W_est = self.model.A.cpu().detach().numpy()
         W_est[np.abs(W_est) < w_threshold] = 0
         return W_est
 
