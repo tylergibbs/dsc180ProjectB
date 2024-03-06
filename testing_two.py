@@ -113,7 +113,7 @@ def gen_dags(
                                     'noise_type': noise_type,
                                     'mlp': mlp
                                 })
-    return dag_list, dag_stats
+    return dag_list[400:], dag_stats[400:]
 
 
 def test_all_methods(output_dir):
