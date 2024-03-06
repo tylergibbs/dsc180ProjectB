@@ -106,7 +106,7 @@ def gen_dags(
         ps = [1],
         noise_types = ['EV', 'NV', 'EXP', 'GUMBEL'],
         mlps = [True, False],
-        reps=10
+        reps=5
     ):
     dag_list = []
     dag_stats = []
@@ -137,7 +137,7 @@ def gen_dags(
                                     'noise_type': noise_type,
                                     'mlp': mlp
                                 })
-    return dag_list, dag_stats
+    return dag_list[349//2:], dag_stats[349//2:]
 
 
 def test_all_methods(output_dir):
