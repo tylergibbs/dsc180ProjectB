@@ -82,7 +82,7 @@ def gen_dags(
         ps = [1],
         noise_types = ['EV', 'NV', 'EXP', 'GUMBEL'],
         mlps = [False],
-        reps=10
+        reps=1
     ):
     dag_list = []
     dag_stats = []
@@ -113,13 +113,18 @@ def gen_dags(
                                     'noise_type': noise_type,
                                     'mlp': mlp
                                 })
+<<<<<<< Updated upstream
     return dag_list[400:], dag_stats[400:]
+=======
+    return dag_list[15:], dag_stats[15:]
+>>>>>>> Stashed changes
 
 
 def test_all_methods(output_dir):
     dag_list, dag_stats = gen_dags()
     for name, func in function_dict.items():
         for dag_obj, dag_stat in zip(dag_list, dag_stats):
+            print(dag_stat)
             # get estimated dag
             start = time.time()
             A_est = func(dag_obj)
