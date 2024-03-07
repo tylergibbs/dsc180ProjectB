@@ -102,11 +102,11 @@ function_dict = {
 def gen_dags(
         ns = [50, 500],
         degrees=[2, 4],
-        nodes = [5, 10, 20, 50, 100],
+        nodes = [100],
         ps = [1],
-        noise_types = ['EV', 'NV', 'EXP', 'GUMBEL'],
+        noise_types = ['GUMBEL'],
         mlps = [True, False],
-        reps=5
+        reps=1
     ):
     dag_list = []
     dag_stats = []
@@ -137,7 +137,7 @@ def gen_dags(
                                     'noise_type': noise_type,
                                     'mlp': mlp
                                 })
-    return dag_list[349//2:], dag_stats[349//2:]
+    return dag_list[1:], dag_stats[1:]
 
 
 def test_all_methods(output_dir):
