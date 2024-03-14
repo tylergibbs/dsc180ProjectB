@@ -18,7 +18,6 @@ def clean():
         os.remove(f)
     for f in glob.glob("images/*.png"):
         os.remove(f)
-    subprocess.run(['rm', 'images/*'], stdout = sys.stdout, check=True, text=True)
 
 #argparser
 def get_args():
@@ -38,8 +37,8 @@ def all():
 
 #a colection of function calls that generate the data used in the report
 def generate_data():
-    #testing.test_all_methods(output_dir='results/testing01.jsonl')
-    #testing_one.test_all_methods(output_dir='results/testing02.jsonl')
+    testing.test_all_methods(output_dir='results/testing01.jsonl')
+    testing_one.test_all_methods(output_dir='results/testing02.jsonl')
 
     testing_dagmats.test_all_methods(output_dir='results/testing06.jsonl')
     testing_two.test_all_methods(output_dir='results/testing07.jsonl')
