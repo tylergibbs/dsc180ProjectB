@@ -9,17 +9,15 @@ This project extrapolates 2 different methods for causal descovery into timeseri
 - GOLEM
 - DAGMA
 
-This project adapts existing implentations of GOLEM and DAGMA into timeseries data using the methods outlined in DYNOTEARS. We have a simple way to generate statistics on all 3 methods, repicates the metrics in the original papers, and compares their performance across consistent metrics. Finaly we make minor imporvments implementing an early stopping threashold in all 3. We expect DAGMA to perform the best, followed by GOLEM, followed by NOTEARS as this is the inverse order they were developed.
+This project adapts existing implentations of GOLEM and DAGMA into timeseries data using the methods outlined in DYNOTEARS. Werepicates the metrics in the DYNOTEARS papers, and compares their performance to a baseline of DYNOTEARS. Finaly we make minor imporvments implementing an early stopping threashold. We expect DAGMA to perform the best, followed by GOLEM, followed by NOTEARS as this is the inverse order they were developed.
 
 ## Data:
 
 We have two sources of data.
 
-(1) Synthetic data prodiced by synthetic_dataset in data_loader/synthetic_dataset
+(1) Synthetic data prodiced by synthetic_dataset in src/data/synthetic_dataset
 
-(2) Data from the cdt library, 
-	(a) Sacks Dataset
-	(b) Tuebingen
+(2) Data from the yfinance library, 
 
 
 ## Running the project
@@ -31,60 +29,84 @@ We have two sources of data.
 * This replicates all analisys in the paper
   
 ### Building the project stages using `run.py`
+This section allows the user to replicate the results in our report
 
-* 'python run.py all' will run through and generate all the sections in run.ipynb in one script
+* 'python run.py all' will generate all data and graphs used in our report
 
-* 'python run.py main' will run through examples of main.py 
+* 'python run.py snp100' will generate a graph illastrating the structureal relationship in the snp100  
 
-* 'python run.py compare' will run a set of comparisons between the methods on a set of data
+* 'python run.py data' will regenerate all the data in results/ this will take a while so it is recomended to use the provided data
 
-* 'python run.py replicate' will generate replications of the results of the 3 papers 
-
-* 'python run.py real_data' will run the 3 methods on two sets of real world data, sacks and tuebingen
-
+* 'python run.py graphs' uses the data in results/ to generate all the graphs in our report
 
 ### Run your own using main.py
 
-* You can run each method on generated data using 'python main.py' comand from the root directory
+You can run each method on generated data or a provided csv file using 'python main.py' comand from the root directory
 
-* Many examples are provided in run.ipynb
+'python main.py' is followed by the name of the method (DYNOTEARS, GOLEMTS, DAGMATS) followed by arguments specifying the data and output directory.
 
-* 'python main.py' is followed by the name of the method in CAPS(NOTEARS, GOLEM, DAGMA) followed by its required arguments
+The -p autoregressive order must always be specified
+
+If you are using existing data you give the filename of the csv file under --data as shown below
 
 ```rb
-python3 main.py --method GOLEM \
-                     --seed 1 \
-                     --d 10 \
-                     --graph_type ER \
-                     --degree 4 \
-                     --noise_type gaussian_ev \
-                     --equal_variances \
-                     --lambda_1 2e-2 \
-                     --lambda_2 5.0 \
-                     --checkpoint_iter 5000
-
-python3 main.py  --method DAGMA \
-                     --seed 1 \
-                     --d 10 \
-                     --lambda_1 2e-2 \
-                     --graph_type ER \
-                     --degree 4 \
-                     --noise_type gaussian_ev \
-                     --equal_variances \
-                     --checkpoint_iter 1000 \
-                     --loss l2
-
-!python3 main.py  --method NOTEARS \
-                     --seed 1 \
-                     --d 10 \
-                     --graph_type ER \
-                     --degree 4 \
-                     --noise_type gaussian_ev \
-                     --equal_variances \
-                     --lambda_1 2e-2 \
-                     --loss l2
+python3 main.py GOLEMTS \
+                      --data filename \ 
+                      -p 1
 ``` 
- 
+
+If no --out paramiter is specified it will write to output.json. If the --out paramiter is specified it will write to that file
+```rb
+python3 main.py GOLEMTS \
+                      --data filename \
+                      -p 1 \
+                      --out new_output.json
+``` 
+
+It can also generate synthetic data using the following two paramiters
+* -n number of observations
+* -d number of variables
+* --degree number of causal relationships
+The following paramiters are optional to further specify the type of synthetic data generated
+* --graph_type ER, SF respectivly Erdös-Rényi or scale-free graphs
+* --noise_type EV, EN, EXP GUMBEL, which are repsecivly gaussian equal variance, gaussian nonequal variance, exponential, gumbel 
+
+```rb
+python3 main.py GOLEMTS \
+                     -n 10 \
+                     -d 3 \
+                     -p 1 \
+                     --graph_type ER \
+                     --degree 4 
+
+python3 main.py  DAGMATS \
+                     -n 10 \
+                     -d 3 \
+                     -p 1 \
+                     --graph_type ER \
+                     --degree 4 \
+                     --noise_type EV 
+
+python3 main.py  DYNOTEARS \
+                     -n 10 \
+                     -d 3 \
+                     -p 1 \
+                     --graph_type ER \
+                     --degree 4 \
+                     --noise_type EXP 
+``` 
+
+### Use the python methods for maximum flexability 
+
+The 3 methods each run their respective method with the given hyper paramiters 
+
+* src.train.run_DYNOTEARS(n, d, p, Y, w_thresh=0.01, epochs=100):
+
+* src.train.run_GOLEMTS(n, d, p, Y, lambda_1=0.1, lambda_2=1, ev=True, lr=3e-3, lambda_3=9, epochs=1000, warmup_epochs=0):
+
+* src.train.run_DAGMATS(n, d, p, Y, lambda1=0.01, lambda2=0.03, lr=0.02, w_threshold=0, epochs=1000)
+
+
   
 ## Reference
 Ng, Ignavier, AmirEmad Ghassami, and Kun Zhang. "On the role of sparsity and dag constraints for learning linear dags." *Advances in Neural Information Processing Systems* 33 (2020): 17943-17954.

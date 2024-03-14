@@ -1,17 +1,12 @@
-import subprocess
-import sys
-from glob import glob
-
-#For Paper Replications Synthetic data
-import logging
-
-#For Real World Datasets
-import cdt
-
-#For Early Stopping Analyses
 import argparse
+from report.snp100 import snp100
+from report.graphs import graphs
 
-
+import report.testing_dagmanl as testing_dagmanl
+import report.testing_two as testing_two
+import report.testing_one as testing_one
+import report.testing as testing
+import report.testing_dagmats as testing_dagmats
 
 def clean():
     subprocess.run(['rm', 'output/*'], stdout = sys.stdout, check=True, text=True)
@@ -31,21 +26,19 @@ def all():
            print("running:{}".format(k))
            commands[k]()
 
-def comareisons():
-    pass
-
-def replication():
-    pass
-
-def real_dataset():
-    pass
-
+def generate_data():
+    testing.test_all_methods(output_dir='testing01.jsonl')
+    testing_one.test_all_methods(output_dir='testing02.jsonl')
+    testing_dagmats.test_all_methods(output_dir='testing06.jsonl')
+    testing_two.test_all_methods(output_dir='results/testing07.jsonl')
+    testing_dagmanl.test_all_methods(output_dir='testing08.jsonl')
 
 commands = {
 'all': all,
-'compare':comareisons,
-'replicate':replication,
-'real_data':real_dataset,
+'snp100':snp100,
+'data':generate_data,
+'graphs':graphs,
+
 }
 
 def run():
