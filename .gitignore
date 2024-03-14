@@ -4,3 +4,9 @@ src/model/__pycache__/
 src/data/__pycache__/dataset.cpython-311.pyc
 src/utill/__pycache__/WAgraph.cpython-311.pyc
 src/utill/__pycache__/constraint.cpython-311.pyc
+*.pyc
+*.pyo
+build/
+dist/
+__pycache__/
+*/__pycache__/

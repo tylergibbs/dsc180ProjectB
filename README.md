@@ -1,6 +1,3 @@
-# dsc180ProjectB
-
-
 
 # Comparisons of Causal Discovery Optimization Methods
 
@@ -24,10 +21,6 @@ We have two sources of data.
 
 * To install the dependencies, run the following command from the root directory of the project: `pip install -r requirements.txt`
 
-### Viewing the project through jupyter notebook
-* All data and graphs have been generated at run.ipynb. This is the simplest and fasted way to run the code.
-* This replicates all analisys in the paper
-  
 ### Building the project stages using `run.py`
 This section allows the user to replicate the results in our report
 
@@ -35,7 +28,7 @@ This section allows the user to replicate the results in our report
 
 * 'python run.py snp100' will generate a graph illastrating the structureal relationship in the snp100  
 
-* 'python run.py data' will regenerate all the data in results/ this will take a while so it is recomended to use the provided data
+* 'python run.py data' will regenerate all the data in results/ this will take time so it is recomended to use the provided data
 
 * 'python run.py graphs' uses the data in results/ to generate all the graphs in our report
 
@@ -51,14 +44,14 @@ If you are using existing data you give the filename of the csv file under --dat
 
 ```rb
 python3 main.py GOLEMTS \
-                      --data filename \ 
+                      --data filename.csv \ 
                       -p 1
 ``` 
 
 If no --out paramiter is specified it will write to output.json. If the --out paramiter is specified it will write to that file
 ```rb
 python3 main.py GOLEMTS \
-                      --data filename \
+                      --data filename.csv \
                       -p 1 \
                       --out new_output.json
 ``` 
@@ -76,7 +69,6 @@ python3 main.py GOLEMTS \
                      -n 10 \
                      -d 3 \
                      -p 1 \
-                     --graph_type ER \
                      --degree 4 
 
 python3 main.py  DAGMATS \
@@ -91,7 +83,7 @@ python3 main.py  DYNOTEARS \
                      -n 10 \
                      -d 3 \
                      -p 1 \
-                     --graph_type ER \
+                     --graph_type SF \
                      --degree 4 \
                      --noise_type EXP 
 ``` 
@@ -102,7 +94,7 @@ The 3 methods each run their respective method with the given hyper paramiters
 
 * src.train.run_DYNOTEARS(n, d, p, Y, w_thresh=0.01, epochs=100):
 
-* src.train.run_GOLEMTS(n, d, p, Y, lambda_1=0.1, lambda_2=1, ev=True, lr=3e-3, lambda_3=9, epochs=1000, warmup_epochs=0):
+* src.train.run_GOLEMTS(n, d, p, Y, lambda_1=0.1, lambda_2=1, ev=True, lr=3e-3, lambda_3=9, epochs=1000):
 
 * src.train.run_DAGMATS(n, d, p, Y, lambda1=0.01, lambda2=0.03, lr=0.02, w_threshold=0, epochs=1000)
 

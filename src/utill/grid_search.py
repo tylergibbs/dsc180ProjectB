@@ -1,4 +1,4 @@
-import src.utill.testing_utils
+import src.utill.testing_utils as testing_utils
 import numpy as np
 import jsonlines
 
