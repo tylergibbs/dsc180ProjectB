@@ -1,13 +1,12 @@
 import networkx as nx
 
-import logging
 
 import igraph as ig
 import networkx as nx
 import numpy as np
 from scipy.special import expit as sigmoid
 
-
+#checks if B is a Directed Ascyclic Graph
 def is_dag(B):
     """Check whether B corresponds to a DAG.
 
@@ -22,14 +21,15 @@ class SyntheticDataset:
     """Generate synthetic data.
 
     Key instance variables:
-        X (numpy.ndarray): [n, d] data matrix.
-        B (numpy.ndarray): [d, d] weighted adjacency matrix of DAG.
+        X (numpy.ndarray): [n, d] data matrix for instant.
+        B (numpy.ndarray): [d, d] weighted adjacency matrix of DAG for instant effects.
         B_bin (numpy.ndarray): [d, d] binary adjacency matrix of DAG.
+        Z (numpy.ndarray): [d, d*p] weighted adjacency matrix of casual matrix for all effects
+        Y (numpy.ndarray): [n, d*p] data matrix.
 
     Code modified from:
         https://github.com/xunzheng/notears/blob/master/notears/utils.py
     """
-    _logger = logging.getLogger(__name__)
 
     def __init__(self, n, d, p, graph_type=None, degree=None, noise_type=None, B_scale=1, A_scale = 1.1, mlp=False, seed=1):
         """Initialize self.
@@ -37,10 +37,13 @@ class SyntheticDataset:
         Args:
             n (int): Number of samples.
             d (int): Number of nodes.
+            p (int): Autoregressive order.
             graph_type ('ER' or 'SF'): Type of graph.
             degree (int): Degree of graph.
             noise_type ('gaussian_ev', 'gaussian_nv', 'exponential', 'gumbel'): Type of noise.
             B_scale (float): Scaling factor for range of B.
+            A_scale (float): Scaling factor for range of A.
+            mlp (boolean): nonlinear effects
             seed (int): Random seed. Default: 1.
         """
         if isinstance(n, int):
@@ -66,7 +69,6 @@ class SyntheticDataset:
            self.rs = np.random.RandomState(seed)    # Reproducibility
         
            self._setup()
-           self._logger.debug("Finished setting up dataset class.")
         else:
            X = n
            Y = d

@@ -3,7 +3,6 @@ addapted from https://github.com/ignavierng/golem dec 2023
 """
 
 
-import logging
 
 import torch.nn as nn
 import torch
@@ -16,7 +15,6 @@ class GolemTS(nn.Module):
         (1) GOLEM-NV: equal_variances=False, lambda_1=2e-3, lambda_2=5.0.
         (2) GOLEM-EV: equal_variances=True, lambda_1=2e-2, lambda_2=5.0.
     """
-    _logger = logging.getLogger(__name__)
 
     def __init__(self, n, d, p, Y, lambda_1, lambda_2, lambda_3,
                  seed=1, A_init=None, ev=False, lr=1e-3):
@@ -76,7 +74,6 @@ class GolemTS(nn.Module):
         self.score = self.likelihood + self.lambda_1 * self.L1_penalty_A + self.lambda_2 * self.h + self.lambda_3 * self.L1_penalty_E
         # Optimizer
         self.train_op = torch.optim.Adam(self.parameters(), lr=self.lr)
-        self._logger.debug("Finished building PYTORCH graph.")
     
     def get_W(self):
         return self.B[:self.d, :self.d]
