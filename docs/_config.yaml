@@ -2,4 +2,4 @@ remote_theme: pages-themes/minimal@v0.2.0
 plugins:
 - jekyll-remote-theme
 
-title: Comparisons of Causal Discovery Optimization Methods
+title: Comparison of Causal Discovery Optimization Methods
