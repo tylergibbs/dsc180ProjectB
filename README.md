@@ -1,18 +1,18 @@
 
 # Comparisons of Causal Discovery Optimization Methods
 
-This project extrapolates 2 different methods for causal descovery into timeseries data and compares them to the effectivness of existing methods:
+This project extrapolates 2 different methods for causal discovery into time series data and compares them to the effectiveness of existing methods:
 
 - GOLEM
 - DAGMA
 
-This project adapts existing implentations of GOLEM and DAGMA into timeseries data using the methods outlined in DYNOTEARS. Werepicates the metrics in the DYNOTEARS papers, and compares their performance to a baseline of DYNOTEARS. Finaly we make minor imporvments implementing an early stopping threashold. We expect DAGMA to perform the best, followed by GOLEM, followed by NOTEARS as this is the inverse order they were developed.
+This project adapts existing implementations of GOLEM and DAGMA into time series data using the methods outlined in DYNOTEARS. We replicate the metrics in the DYNOTEARS papers, and compare their performance to a baseline of DYNOTEARS. Finally we make minor improvements implementing an early stopping threshold. We expect DAGMA to perform the best, followed by GOLEM, followed by NOTEARS as this is the inverse order they were developed.
 
 ## Data:
 
 We have two sources of data.
 
-(1) Synthetic data prodiced by synthetic_dataset in src/data/synthetic_dataset
+(1) Synthetic data produced by synthetic_dataset in src/data/synthetic_dataset
 
 (2) Data from the yfinance library, 
 
@@ -26,15 +26,15 @@ This section allows the user to replicate the results in our report
 
 * 'python run.py all' will generate all data and graphs used in our report
 
-* 'python run.py snp100' will generate a graph illastrating the structureal relationship in the snp100  
+* 'python run.py snp100' will generate a graph illustrating the structural relationship in the snp100  
 
-* 'python run.py data' will regenerate all the data in results/ this will take time so it is recomended to use the provided data
+* 'python run.py data' will regenerate all the data in results/ this will take time so it is recommended to use the provided data
 
 * 'python run.py graphs' uses the data in results/ to generate all the graphs in our report
 
 ### Run your own using main.py
 
-You can run each method on generated data or a provided csv file using 'python main.py' comand from the root directory
+You can run each method on generated data or a provided csv file using 'python main.py' command from the root directory
 
 'python main.py' is followed by the name of the method (DYNOTEARS, GOLEMTS, DAGMATS) followed by arguments specifying the data and output directory.
 
@@ -48,7 +48,7 @@ python3 main.py GOLEMTS \
                       -p 1
 ``` 
 
-If no --out paramiter is specified it will write to output.json. If the --out paramiter is specified it will write to that file
+If no --out parameter is specified it will write to output.json. If the --out parameter is specified it will write to that file
 ```rb
 python3 main.py GOLEMTS \
                       --data filename.csv \
@@ -56,13 +56,13 @@ python3 main.py GOLEMTS \
                       --out new_output.json
 ``` 
 
-It can also generate synthetic data using the following two paramiters
+It can also generate synthetic data using the following two parameters
 * -n number of observations
 * -d number of variables
 * --degree number of causal relationships
-The following paramiters are optional to further specify the type of synthetic data generated
-* --graph_type ER, SF respectivly Erdös-Rényi or scale-free graphs
-* --noise_type EV, EN, EXP GUMBEL, which are repsecivly gaussian equal variance, gaussian nonequal variance, exponential, gumbel 
+The following parameters are optional to further specify the type of synthetic data generated
+* --graph_type ER, SF respectively Erdös-Rényi or scale-free graphs
+* --noise_type EV, EN, EXP GUMBEL, which are respectively gaussian equal variance, gaussian nonequal variance, exponential, gumbel 
 
 ```rb
 python3 main.py GOLEMTS \
@@ -88,9 +88,9 @@ python3 main.py  DYNOTEARS \
                      --noise_type EXP 
 ``` 
 
-### Use the python methods for maximum flexability 
+### Use the python methods for maximum flexibility
 
-The 3 methods each run their respective method with the given hyper paramiters 
+The 3 methods each run their respective method with the given hyperparameters
 
 * src.train.run_DYNOTEARS(n, d, p, Y, w_thresh=0.01, epochs=100):
 
