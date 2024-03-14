@@ -1,25 +1,62 @@
 
+
+### Valen Potloff
+### Tyler Gibbs
+### Biwei Huang
+### Babak Salimi
+
 # Introduction 
 
-## Causal Analisys
+This project extends recent advancements in causal discovery to timeseries data with instantanious and time lagged effects. These algorithems can be used to discover not just the size of an effect but also the direction of causality from timeseries data. We adapt 2 algorithems, GOLEM and DAGMA, to timeseries and compare it to a similar existing algorithem DYNOTEARS. We have named our adaptations GOLEMTS(GOLEM Time Series) and DAGMATS(DAGMA Time Series). 
 
-### Relevance 
 
-### History
+## Causal Discovery
 
-### Numerical Optimisation
+Causal discovery is the term for learning to direction of a causal effect from data. While we might know variables A and B are correlated determining which causes the other or if they are the result of a third effect is much more difficult. The methods discussed here will only consider the case where the casual graph forms a Directed Ascyclic Graph(DAG), where no causal loops form. A variety of tools have been developed to solve this problem, recently algorithems that formulate this as a continoues optimisation problem have been an active area of research. NOTEARS first formulated this as a continuous constrained optimization task using a hard DAG constraint.
+
+## Relevance 
+
+
+
+Unfortunately much of the data we would like to find causal relationships in is very large and the computationaly intensive nature of known algorithems is limits the impact of this field in active research. However in many situations researchers are dealing with timesearies data where they are looking for both instant and time lagged effects. If we can incorperate assumptions about this data into these algorithems that dramaticaly narrow the range of data we need to perform the most computationaly intensive calculations we can see significant improvments to our analisys.
 
 ## DYNOTEARS
 
-## GOLEM
+In 2020 NOTEARS was addapted to the timeseries data with the createtion of DYNOTEARS. This divieded the data into two sections, instantanious effects and time lagged effects. Time lagged effects can not be affected by variables measured in the future, incorperating these assumptions into the algorithem allowed to to more accurately and much more quickly prosses datasets. We take this approach and extend it to GOLEM and DAGMA. Since GOLEM and DAGMA are more sognificantly moreaccurate than DYNOTEARS on large datasets our implementations of these algorithems for timeseries datasets has seen a similar improvment over DYNOTEARS.  
 
-## DAGMA
+We provide an implementation of DYNOTEARS primaraly to serve as a baseline to compare GOLEMTS and DAGMATS as they are superior in nearly every circumstance.
+
+## GOLEMTS
+
+GOLEM built on NOTEARS' success by showing that with a better formulation of the likelyhood function and a soft sparcity constraint the hard dag constraint could be weakend to a soft constraint. This unconstrained opti- mization problem was much easier to solve. We extend the likelyhood function developed for GOLEM for time lagged effects resulting in GOLEMTS. The specifics of how this works mathematicaly can be found in the report.pdf in the linked githubrepository.
+
+GOLEM has two seperate implementations, GOLEM_EV assumes equal variences amoung the variables while GOLEM_NV does not, we mirror this in our implementation with GOLEMTS_EV and GOLEMTS_NV.
+
+## DAGMATS
+
+DAGMA incorperates assumtions about how matrix representations of DAGs for M-matrixes to create a DAG constraint with better performing gradiants which allow standard optimisation methods to reach the true DAG representing the causal effects faster and more accuratly. We apply this new constraint to the objective function we developed for the previous methods to get DAGMATS. Again the specifics of how this is accomplished can be found in report.pdf.
 
 # Results
 
-## Synthetic Data
+The following graphs show the reletive performace of DYNOTEARS, GOLEM_EV, GOLEM_NV, and DAGMATS with datasets of increasing size generated with equal varience gausian noise, noequal varience gausian noise, eponential noise, and gumbal noise.
 
-## Real World Data
+First we examine the runtime and see that GOLEM_EV, GOLEM_NV, and DAGMATS perform significantly better on large datasets than DYNOTEARS.
+
+[<img alt="alt" width="40px" src="runtime_2.png" />]()
+
+There are many ways to measure error when finding causal graphs. We will look at two, the true positive rate and structural haming distance.
+
+The true positive rate is exactly what it sounds like. The percent of predicted links that are true, a higher number is better.
+
+Structural hamning distance is the number of additions or removals required to change our predicted graph to the true graph. Lower is better.
+
+First we examine the true positve rate and see a significant divergence where we see that on larger datasets DYNOTEARSTS and DAGMATS maintain their precision but GOLEMTS suffers significantly.
+
+[<img alt="alt" width="40px" src="tpr_3.png" />]()
+
+However this story is complicated when we also look at structural hamning distance where both implementations of GOLEMTS outperform both DAGAMTS and and DYNOTEARS, although by a more modest degree. 
+
+[<img alt="alt" width="40px" src="sdh_3.png" />]()
 
 # Usage
 

@@ -53,8 +53,6 @@ def graphs():
      file_list = [
      'testing01.jsonl',
      'testing02.jsonl',
-     'testing04.jsonl',
-     'testing05.jsonl',
      'testing06.jsonl',
      'testing07.jsonl',
      'testing08.jsonl'

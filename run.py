@@ -7,6 +7,9 @@ import report.testing_two as testing_two
 import report.testing_one as testing_one
 import report.testing as testing
 import report.testing_dagmats as testing_dagmats
+import report.testing_2 as testing_2
+import report.testing_dagmanl_2 as testing_dagmanl_2
+
 
 def clean():
     subprocess.run(['rm', 'output/*'], stdout = sys.stdout, check=True, text=True)
@@ -27,11 +30,12 @@ def all():
            commands[k]()
 
 def generate_data():
-    testing.test_all_methods(output_dir='testing01.jsonl')
-    testing_one.test_all_methods(output_dir='testing02.jsonl')
-    testing_dagmats.test_all_methods(output_dir='testing06.jsonl')
+    testing.test_all_methods(output_dir='results/testing01.jsonl')
+    testing_one.test_all_methods(output_dir='results/testing02.jsonl')
+
+    testing_dagmats.test_all_methods(output_dir='results/testing06.jsonl')
     testing_two.test_all_methods(output_dir='results/testing07.jsonl')
-    testing_dagmanl.test_all_methods(output_dir='testing08.jsonl')
+    testing_dagmanl.test_all_methods(output_dir='results/testing08.jsonl')
 
 commands = {
 'all': all,
