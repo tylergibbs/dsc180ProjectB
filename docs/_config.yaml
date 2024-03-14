@@ -2,4 +2,4 @@ remote_theme: pages-themes/minimal@v0.2.0
 plugins:
 - jekyll-remote-theme
 
-title: Comparison of Causal Discovery Optimization Methods
+title: Advancement of Structure Learning Methods for Time Series Data

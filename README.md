@@ -1,5 +1,5 @@
 
-# Comparisons of Causal Discovery Optimization Methods
+# Advancement of Structure Learning Methods for Time Series Data
 
 This project extrapolates 2 different methods for causal discovery into time series data and compares them to the effectiveness of existing methods:
 
