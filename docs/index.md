@@ -7,6 +7,8 @@
 ### Biwei Huang
 ### Babak Salimi
 
+[Report](https://github.com/tylergibbs/artifact180A11-1/blob/main/report.pdf)
+
 # Introduction 
 
 This project extends recent advancements in causal discovery to time series data with instantaneous and time lagged effects. These algorithms can be used to discover not just the size of an effect but also the direction of causality from time series data. We adapt 2 algorithms, GOLEM and DAGMA, to time series and compare it to a similar existing algorithm DYNOTEARS. We have named our adaptations GOLEMTS(GOLEM Time Series) and DAGMATS(DAGMA Time Series).
@@ -16,6 +18,7 @@ This project extends recent advancements in causal discovery to time series data
 Causal discovery is the term for learning to direction of a causal effect from data. While we might know variables A and B are correlated determining which causes the other or if they are the result of a third effect is much more difficult. The methods discussed here will only consider the case where the casual graph forms a Directed Acyclic Graph(DAG), where no causal loops form. A variety of tools have been developed to solve this problem, recently algorithms that formulate this as a continuous optimisation problem have been an active area of research. NOTEARS first formulated this as a continuous constrained optimization task using a hard DAG constraint.
 
 Unfortunately much of the data we would like to find causal relationships in is very large and the computationally intensive nature of known algorithms limits the impact of this field in active research. However in many situations researchers are dealing with time series data where they are looking for both instant and time lagged effects. If we can incorporate assumptions about this data into these algorithms that dramatically narrow the range of data we need to perform the most computationally intensive calculations we can see significant improvements to our analysis.
+
 
 ## DYNOTEARS
 
